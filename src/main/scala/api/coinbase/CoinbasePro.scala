@@ -17,16 +17,18 @@ object CoinbasePro extends ErrorAccumulatingCirceSupport {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  def buildUrl(baseUrl: String): String = {
+  def buildUrl(order: Order, baseUrl: String): String = {
+
+    val assetCombo = if (order.input == "BTC" || order.output == "BTC") "BTC-USD" else "ETH-USD"
     val builder = StringBuilder.newBuilder
     builder.append(baseUrl)
-    builder.append("BTC")
-    builder.append("-")
-    builder.append("USD")
+    builder.append(assetCombo)
     builder.append("/book")
     builder.append("?level=2")
 
+    println(s"url ${builder.toString()}")
     builder.toString
+
   }
 
   def fetchOrderBook(url: String): Future[OrderBookResponse] =

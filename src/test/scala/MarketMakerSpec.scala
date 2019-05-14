@@ -35,6 +35,16 @@ class MarketMakerSpec extends UnitSpec {
 
     response3 shouldBe a[ExchangeError]
 
+    val validOrder3 = Order("coinbase_pro", "USD", 1000, "ETH")
+    val response4 = MarketMaker.processOrder(validOrder3, orderBook)
+
+    response4 shouldBe a[ExchangeResponse]
+
+    val validOrder4 = Order("coinbase_pro", "ETH", 1000, "USD")
+    val response5 = MarketMaker.processOrder(validOrder4, orderBook)
+
+    response5 shouldBe a[ExchangeResponse]
+
   }
 }
 

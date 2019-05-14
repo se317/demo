@@ -41,9 +41,7 @@ trait ExchangeHandler {
     require(order.amount > 0)
 
     val pair = (order.input, order.output) match {
-      case ("BTC", "USD") | ("USD", "BTC")
-          // | ("ETC", "USD") | ("USD", "ETC")
-      ⇒ true
+      case ("BTC", "USD") | ("USD", "BTC") | ("ETH", "USD") | ("USD", "ETH") ⇒ true
       case (_,_) ⇒ false
     }
     require(pair)

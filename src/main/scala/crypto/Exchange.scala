@@ -22,7 +22,7 @@ class Exchange extends Actor with ActorLogging {
   override def receive: Receive = {
 
     case CoinbaseRequest(order) ⇒
-      val url = CoinbasePro.buildUrl(baseUrl)
+      val url = CoinbasePro.buildUrl(order, baseUrl)
       CoinbasePro.fetchOrderBook(url)
         .map(CoinbaseResponse.apply(order,_))
         .pipeTo(self)(sender())

@@ -1,6 +1,6 @@
 package crypto
 
-import java.time.LocalDateTime
+import java.time.{LocalDateTime, ZoneOffset}
 
 import com.typesafe.scalalogging.Logger
 import crypto.Exchange.{ExchangeCmd, ExchangeError, ExchangeResponse}
@@ -51,10 +51,16 @@ object MarketMaker {
   def processOrder(order: Order, orderBook: OrderBook): ExchangeCmd = (order.input, order.output) match {
     case ("BTC", "USD") ⇒
       val avgPrice = calcAvgPrice(order.amount, orderBook.asks)
-      ExchangeResponse(avgPrice, LocalDateTime.now())
+      ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
     case ("USD", "BTC") ⇒
       val avgPrice = calcAvgPrice(order.amount, orderBook.bids)
-      ExchangeResponse(avgPrice, LocalDateTime.now())
+      ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
+    case ("ETH", "USD") ⇒
+      val avgPrice = calcAvgPrice(order.amount, orderBook.asks)
+      ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
+    case ("USD", "ETH") ⇒
+      val avgPrice = calcAvgPrice(order.amount, orderBook.bids)
+      ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
     case (_, _) ⇒ ExchangeError("invalid asset combination")
   }
 }
