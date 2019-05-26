@@ -5,11 +5,12 @@ import java.time.{LocalDateTime, ZoneOffset}
 import com.typesafe.scalalogging.Logger
 import crypto.Exchange.{ExchangeCmd, ExchangeError, ExchangeResponse}
 import model.{Order, OrderBook, OrderBookEntry}
+import util.ConfigUtil
 
 import scala.annotation.tailrec
 
-object MarketMaker {
-  val logger = Logger("MarketMaker")
+object Market {
+  val logger = Logger("Market")
 
   /**
     * calculates average price for stated currency amount. Orders that can not be fully met get partially executed.
@@ -43,24 +44,20 @@ object MarketMaker {
   }
 
   /**
-    * processes order based on supported crypto currency / fiat currency permuation
-    * @param order
-    * @param orderBook
+    * processes order based on supported crypto currency / fiat currency permutations
+    * @param order order
+    * @param orderBook orderBook
     * @return `ExchangeResponse` or `ExchangeError`
     */
-  def processOrder(order: Order, orderBook: OrderBook): ExchangeCmd = (order.input, order.output) match {
-    case ("BTC", "USD") ⇒
+  def processOrder(order: Order, orderBook: OrderBook): ExchangeCmd = {
+    if(ConfigUtil.isValidAsset(order.input) && ConfigUtil.isValidFiat(order.output)){
       val avgPrice = calcAvgPrice(order.amount, orderBook.asks)
       ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
-    case ("USD", "BTC") ⇒
+    } else if(ConfigUtil.isValidFiat(order.input) && ConfigUtil.isValidAsset(order.output)) {
       val avgPrice = calcAvgPrice(order.amount, orderBook.bids)
       ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
-    case ("ETH", "USD") ⇒
-      val avgPrice = calcAvgPrice(order.amount, orderBook.asks)
-      ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
-    case ("USD", "ETH") ⇒
-      val avgPrice = calcAvgPrice(order.amount, orderBook.bids)
-      ExchangeResponse(avgPrice, LocalDateTime.now(ZoneOffset.UTC))
-    case (_, _) ⇒ ExchangeError("invalid asset combination")
+    }
+    else
+      ExchangeError("invalid asset combination")
   }
 }

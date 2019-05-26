@@ -5,7 +5,7 @@ import scala.util.{Failure, Success, Try}
 
 case class OrderBook(bids: Seq[OrderBookEntry], asks: Seq[OrderBookEntry])
 
-case class OrderBookEntry(price: BigDecimal, size: Double, numOrders: Long)
+case class OrderBookEntry(price: BigDecimal, size: BigDecimal, numOrders: Long)
 
 case class OrderBookResponse(sequence: Long, bids: List[(String, String, Int)], asks: List[(String, String, Int)])
 
@@ -17,7 +17,7 @@ object OrderBook {
       val buff = ListBuffer[OrderBookEntry]()
       xs.foreach { bid ⇒
         val price = BigDecimal(bid._1)
-        val size = bid._2.toDouble
+        val size = BigDecimal(bid._2)
         buff += OrderBookEntry(price, size, bid._3)
       }
       buff.toList

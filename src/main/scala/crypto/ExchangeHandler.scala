@@ -13,6 +13,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 import Exchange._
+import util.ConfigUtil
 
 trait ExchangeHandler {
   implicit val system: ActorSystem = ActorSystem()
@@ -39,11 +40,6 @@ trait ExchangeHandler {
   def parseOrder(order: Order) = Try {
     require(order.exchange == "coinbase_pro")
     require(order.amount > 0)
-
-    val pair = (order.input, order.output) match {
-      case ("BTC", "USD") | ("USD", "BTC") | ("ETH", "USD") | ("USD", "ETH") ⇒ true
-      case (_,_) ⇒ false
-    }
-    require(pair)
+    require(ConfigUtil.isValidPair(order))
   }
 }

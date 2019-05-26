@@ -5,7 +5,6 @@ import java.time.LocalDateTime
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import akka.pattern.pipe
 import api.coinbase.CoinbasePro
-import com.typesafe.config.ConfigFactory
 import crypto.Exchange.{CoinbaseRequest, CoinbaseResponse, ExchangeError}
 import model._
 
@@ -16,20 +15,19 @@ class Exchange extends Actor with ActorLogging {
   implicit val system: ActorSystem = ActorSystem()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  private val config = ConfigFactory.load
-  private val baseUrl = config.getString("api.coinbase.url")
-
   override def receive: Receive = {
 
     case CoinbaseRequest(order) ⇒
-      val url = CoinbasePro.buildUrl(order, baseUrl)
-      CoinbasePro.fetchOrderBook(url)
-        .map(CoinbaseResponse.apply(order,_))
-        .pipeTo(self)(sender())
-
+      CoinbasePro.buildUrl(order) match {
+        case Right(url) ⇒
+          CoinbasePro.fetchOrderBook(url)
+            .map(CoinbaseResponse.apply(order,_))
+            .pipeTo(self)(sender())
+        case Left(err) ⇒ sender() ! ExchangeError(err)
+      }
     case CoinbaseResponse(order, resp) ⇒
       OrderBook.toOrderBook(resp) match {
-        case Right(ob) ⇒ sender() ! MarketMaker.processOrder(order, ob)
+        case Right(ob) ⇒ sender() ! Market.processOrder(order, ob)
         case Left(err) ⇒ sender() ! ExchangeError(s"Can not parse Coinbase Orderbook: $err")
       }
   }
